@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>業餘無線電三等資格測試系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Microsoft JhengHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 900px;
+            width: 100%;
+            padding: 30px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        button {
+            padding: 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-exam {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-exam:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+        
+        .btn-retry {
+            background: #f093fb;
+            color: white;
+        }
+        
+        .btn-retry:hover:not(:disabled) {
+            background: #e070e0;
+            transform: translateY(-2px);
+        }
+        
+        .btn-retry:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .exam-section {
+            display: none;
+        }
+        
+        .exam-section.active {
+            display: block;
+        }
+        
+        .progress {
+            background: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            height: 35px;
+            position: sticky;
+            top: -30px;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.3s ease;
+            width: 0%;
+            font-size: 14px;
+        }
+        
+        .question {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+        }
+        
+        .question-text {
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .option {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            background: white;
+            transition: all 0.2s ease;
+        }
+        
+        .option:hover {
+            border-color: #667eea;
+            background: #f0f0ff;
+        }
+        
+        .option input[type="radio"] {
+            margin-right: 8px;
+        }
+        
+        .option.selected {
+            border-color: #667eea;
+            background: #e8eaff;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .btn-danger {
+            background: #f44336;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #da190b;
+        }
+        
+        .btn-secondary {
+            background: #999;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #777;
+        }
+        
+        .result {
+            text-align: center;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        .result.pass {
+            background: #e8f5e9;
+            border: 2px solid #4caf50;
+        }
+        
+        .result.fail {
+            background: #ffebee;
+            border: 2px solid #f44336;
+        }
+        
+        .result-score {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .result.pass .result-score {
+            color: #4caf50;
+        }
+        
+        .result.fail .result-score {
+            color: #f44336;
+        }
+        
+        .result-message {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .result-detail {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        .errors-list {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .errors-list h3 {
+            color: #f44336;
+            margin-bottom: 15px;
+        }
+        
+        .error-item {
+            background: #ffebee;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid #f44336;
+            border-radius: 3px;
+        }
+        
+        .error-question {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .error-your-answer {
+            color: #f44336;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .error-correct-answer {
+            color: #4caf50;
+            font-size: 14px;
+        }
+        
+        .home-info {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            text-align: left;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            background: #e8eaff;
+            transform: translateY(-2px);
+        }
+        
+        .stat-card.clickable {
+            border: 2px solid transparent;
+        }
+        
+        .stat-card.clickable:hover {
+            border-color: #667eea;
+        }
+        
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .print-btn {
+            background: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            margin-left: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .print-btn:hover {
+            background: #45a049;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>業餘無線電三等資格測試系統</h1>
+        <div class="subtitle">35題考試 (需答對25題及格)</div>
+        
+        <!-- 首頁 -->
+        <div id="home" class="exam-section active">
+            <div class="home-info">
+                <strong>測試說明：</strong><br>
+                • 每次隨機抽取 <strong>35道題目</strong><br>
+                • 答對 <strong>25題</strong>以上為及格<br>
+                • 支援複習機制，可查看錯誤題目<br>
+                • 可重新測試之前錯誤的題目
+            </div>
+            
+            <div id="stats" class="stats" style="display:none;">
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-pass">0</div>
+                    <div class="stat-label">測試及格次數</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="stat-fail">0</div>
+                    <div class="stat-label">測試不及格次數</div>
+                </div>
+                <div class="stat-card clickable" onclick="app.toggleErrorList()">
+                    <div class="stat-value" id="stat-errors">0</div>
+                    <div class="stat-label">累計錯誤題數 (點擊查看)</div>
+                </div>
+            </div>
+            
+            <div class="menu">
+                <button class="btn-exam" onclick="app.startExam()">📝 開始新考試</button>
+                <button class="btn-retry" id="retryBtn" onclick="app.startRetry()">🔄 重新測試錯誤題目</button>
+            </div>
+            
+            <div id="errorList" style="display:none; margin-top: 20px;">
+                <div class="errors-list">
+                    <div class="no-print">
+                        <h3 style="display: inline-block;">📋 累計錯誤題目列表</h3>
+                        <button class="print-btn" onclick="app.printErrors()">🖨️ 列印錯題</button>
+                    </div>
+                    <div id="errorListContent"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 考試頁面 -->
+        <div id="exam" class="exam-section">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar">0%</div>
+            </div>
+            
+            <div id="questionsContainer"></div>
+            
+            <div class="button-group">
+                <button class="btn-danger" onclick="app.cancelExam()">取消考試</button>
+                <button class="btn-primary" onclick="app.submitExam()">提交答題</button>
+            </div>
+        </div>
+        
+        <!-- 成績頁面 -->
+        <div id="result" class="exam-section"></div>
+    </div>
+
+    <script>
+        const app = {
+            allQuestions: [
+                {id: 1, category: "無線電規章與相關法規", text: "下列敘述何者為NCC業餘無線電法規規範的目的?", options: ["儘可能給最多的公民提供個人無線電通訊", "提供國際非營利組織的通訊", "提昇無線電的通訊與技術", "以上皆是"], answer: 2},
+                {id: 2, category: "無線電規章與相關法規", text: "在我國是哪一個機關負責業餘無線電法規?", options: ["內政部", "國際電信聯盟", "國家通訊傳播委員會", "國防部"], answer: 2},
+                {id: 3, category: "無線電規章與相關法規", text: "NCC的法規內哪一部分包含了業餘無線電操作?", options: ["電信管理法", "實驗研發專用電信網路設置使用管理辦法", "專用電信網路設置使用管理辦法", "業餘無線電人員及電臺管理辦法"], answer: 3},
+                {id: 4, category: "無線電規章與相關法規", text: "下述何者為NCC業餘無線電法規規範的目的?", options: ["促進國際交流", "提供我國救災單位廉價的通訊", "訓練軍事電臺操作人員", "以上皆是"], answer: 0},
+                {id: 5, category: "無線電規章與相關法規", text: "下列何者會針對中繼電臺的收發頻道跟其他數據提出建議?", options: ["頻譜管理員", "頻率協調員", "國家通訊傳播委員會地區監理處", "國際電信聯盟"], answer: 1},
+                {id: 6, category: "無線電規章與相關法規", text: "誰來遴選頻率協調員?", options: ["國家通訊傳播委員會射頻與資源管理處", "全國獨立頻率協調員理事會辦公室地方分會", "其電臺有資格作為中繼電臺的本地或地區的業餘無線電人員", "國家通訊傳播委員會地區監理處"], answer: 2},
+                {id: 7, category: "無線電規章與相關法規", text: "下列何者為NCC業餘無線人員及電臺管理辦法定義的業餘無線電臺?", options: ["在業餘無線電組成傳送無線電通信的設備的電臺", "安裝業餘無線電的接收機、發射機及功率放大器的建築物", "由非專業人員操作的任何無線電電臺", "供娛樂用的任何無線電電臺"], answer: 0},
+                {id: 8, category: "無線電規章與相關法規", text: "下列何者是操作業餘無線電中被允許的?", options: ["向朋友傳送音樂及影像", "利用業餘無線電間傳送訊息的途徑收取外快", "提供低價位的傳播來創業", "讓業餘無線電人員可以進行無線電的試驗，並與全世界的業餘無線電人員交流"], answer: 3},
+                {id: 9, category: "無線電規章與相關法規", text: "什麼是國際電信聯盟(ITU)?", options: ["美國電信部門的一個機構", "聯合國的負責相關訊息及通訊技術事務的機構", "獨立的頻率協調機構", "NCC的一個部門"], answer: 1},
+                {id: 10, category: "無線電規章與相關法規", text: "哪一個頻率是在6公尺波段內的?", options: ["49.0百萬赫", "50.05百萬赫", "28.50百萬赫", "222.15百萬赫"], answer: 1},
+                {id: 11, category: "無線電規章與相關法規", text: "當你利用145.52百萬赫發送時，你是使用哪一個業餘波段?", options: ["2公尺", "20公尺", "14公尺", "6公尺"], answer: 0},
+                {id: 12, category: "無線電規章與相關法規", text: "3等業餘無線臺執照可操作70公分波段的哪一頻率?", options: ["50.05百萬赫", "145.520百萬赫", "439.350百萬赫", "144.520百萬赫"], answer: 2},
+                {id: 13, category: "無線電規章與相關法規", text: "3等業餘無線臺執照可操作於2公尺波段的哪一頻率?", options: ["50.05百萬赫", "145.52百萬赫", "439.35百萬赫", "436.52百萬赫"], answer: 1},
+                {id: 14, category: "無線電規章與相關法規", text: "如果你在50.1百萬赫上發送，請問你是操作於哪一業餘波段?", options: ["15公尺", "10公尺", "2公尺", "6公尺"], answer: 3},
+                {id: 15, category: "無線電規章與相關法規", text: "業餘無線電操作在70公分波段的某些部分是次要業務使用，理由為下列何者?", options: ["業餘無線電人員在這個波段也許會發現非業餘電臺，必須避免干擾他們", "本國業餘電臺必需給予外國電臺優先權", "國際通訊在70公分是不被允許的", "數位傳輸在70公分是不被允許的"], answer: 0},
+                {id: 16, category: "無線電規章與相關法規", text: "為什麼不可把傳送頻率設定正好在業餘波段的邊緣?", options: ["允許在發射頻率顯示器校正誤差", "調變後的頻率不會超過波段的邊緣", "允許發射機頻率的偏移", "以上皆是"], answer: 3},
+                {id: 17, category: "無線電規章與相關法規", text: "在30百萬赫以上的哪些波段提供3等業餘無線臺執照使用?", options: ["6公尺、2公尺、70公分", "2公尺、13公分", "6公尺、2公尺、1.25公尺", "2公尺、70公分"], answer: 0},
+                {id: 18, category: "無線電規章與相關法規", text: "在50.0-50.1百萬赫及144.0-144.1百萬赫的模式限定，允許作業的模式為何?", options: ["CW", "CW跟RTTY", "SSB", "CW跟SSB"], answer: 0},
+                {id: 19, category: "無線電規章與相關法規", text: "下列何者為有效的我國電臺呼號?", options: ["BA3505", "BV3ABC", "KDKA", "11Q1176"], answer: 1},
+                {id: 20, category: "無線電規章與相關法規", text: "NCC核發的業餘電臺執照允許甚麼型式的國際通訊?", options: ["與業餘無線電服務及個人特色評論的相關通信", "有商業行為或個人特質評論的相關通信", "比賽事項的相關通信，其他都禁止", "國際廣播電臺允許的任何通信"], answer: 0},
+                {id: 21, category: "無線電規章與相關法規", text: "在國外，甚麼時候可以操作業餘無線電臺?", options: ["當他國已授權時", "當有雙方協議的第三方通訊時", "當授權允許使用它國語言時", "當你在國外與未取得執照的個人通信時"], answer: 0},
+                {id: 22, category: "無線電規章與相關法規", text: "下列何者為三等業餘無線電臺可選擇的呼號?", options: ["BM2XXX", "KA1X", "W1XX", "以上皆是"], answer: 0},
+                {id: 23, category: "無線電規章與相關法規", text: "NCC所核發的業餘無線電人員執照有效期限為何?", options: ["5年", "終身", "10年", "20年"], answer: 2},
+                {id: 24, category: "無線電規章與相關法規", text: "下列何者是業餘無線電人員執照有效期屆滿前申請換照的期間?", options: ["六個月起五個月內", "四個月起三個月內", "二個月起一個月內", "沒有規定"], answer: 0},
+                {id: 25, category: "無線電規章與相關法規", text: "請問當你通過了業餘無線電測試，何時可以開始在業餘頻道上操作自己的機器?", options: ["立刻", "考試過後30天", "取得NCC核發給你業餘無線電人員執照及電臺執照", "要等到你收到NCC的執照"], answer: 2},
+                {id: 26, category: "無線電規章與相關法規", text: "當你發現執照已過期，可以繼續在業餘無線電頻道上操作嗎?", options: ["不行", "可以，但是你的呼號末尾是GP", "可以，但是必須在授權的網絡", "可以繼續操作兩年"], answer: 0},
+                {id: 27, category: "無線電規章與相關法規", text: "在自選呼號規定之下，誰可以選擇所要的呼號?", options: ["只有擁有一等或二等業餘電臺執照者", "只有一等業餘電臺執照者", "擁有業餘電臺執照已有連續十年以上者", "臨時電臺"], answer: 3},
+                {id: 28, category: "無線電規章與相關法規", text: "目前我國業餘電人員執照的等級為何?", options: ["一等、二等、三等、四等", "一等、三等、四等", "一等、二等、四等", "一等、二等、三等"], answer: 3},
+                {id: 29, category: "無線電規章與相關法規", text: "何時業餘電臺允許傳輸隱藏信息意義的編碼或密碼？", options: ["只在比賽期間", "只有在操作行動電臺時", "只有經NCC核准時", "只有在使用1,280百萬赫以上的頻率時"], answer: 2},
+                {id: 30, category: "無線電規章與相關法規", text: "業餘電臺授權傳輸音樂的唯一時間是什麼時候？", options: ["當與載人太空船通信的授權轉傳有關時", "音樂不產生混附發射時", "為干擾非法傳輸目的時", "在1,280百萬赫以上傳輸音樂時"], answer: 0},
+                {id: 31, category: "無線電通訊方法", text: "在2公尺波段哪一個是中繼電臺最常使用的頻率偏移?", options: ["正500千赫", "正或負600千赫", "負500千赫", "只有正600千赫"], answer: 1},
+                {id: 32, category: "無線電通訊方法", text: "在70公分波段哪一個是中繼電臺的頻率偏移", options: ["正或負5百萬赫", "正或負600千赫", "負600千赫", "正600千赫"], answer: 0},
+                {id: 33, category: "無線電通訊方法", text: "如果知道其他電臺的呼號，用中繼電臺呼叫它的恰當方法是什麼?", options: ["說\"間隔、間隔\"，然後呼叫友台呼號", "呼叫友台呼號，然後標識自己的呼號", "說CQ三次，然後呼叫友台呼號", "等待友台呼叫CQ然後回答"], answer: 1},
+                {id: 34, category: "無線電通訊方法", text: "如何回答友台呼叫CQ?", options: ["發射CQ然後加上友台呼號", "發射自己的呼號然後加上友台呼號", "發射友台呼號然後加上自己的呼號", "發射訊號強度報告再加上自己的呼號"], answer: 2},
+                {id: 35, category: "無線電通訊方法", text: "在對傳輸中裝備或是天線進行測試時，業餘無線電人員要注意甚麼?", options: ["有效的標識在發送中的電臺", "要在晚上十點以後再測試", "通知NCC關於測試", "在測試過程中說明測試目的"], answer: 0}
+            ],
+            
+            currentExam: null,
+            errorQuestions: [],
+            currentWrongAnswers: [],
+            stats: { pass: 0, fail: 0, totalErrors: 0 },
+            
+            init() {
+                this.loadStats();
+                const savedErrors = localStorage.getItem('errorQuestions');
+                if (savedErrors) {
+                    const errorIds = JSON.parse(savedErrors);
+                    this.errorQuestions = errorIds.map(id => 
+                        this.allQuestions.find(q => q.id === id)
+                    ).filter(q => q !== undefined);
+                    this.stats.totalErrors = this.errorQuestions.length;
+                }
+                this.updateStatsDisplay();
+            },
+            
+            loadStats() {
+                const saved = localStorage.getItem('examStats');
+                if (saved) {
+                    this.stats = JSON.parse(saved);
+                }
+            },
+            
+            saveStats() {
+                localStorage.setItem('examStats', JSON.stringify(this.stats));
+                const errorIds = this.errorQuestions.map(q => q.id);
+                localStorage.setItem('errorQuestions', JSON.stringify(errorIds));
+            },
+            
+            updateStatsDisplay() {
+                document.getElementById('stat-pass').textContent = this.stats.pass;
+                document.getElementById('stat-fail').textContent = this.stats.fail;
+                document.getElementById('stat-errors').textContent = this.stats.totalErrors;
+                
+                const retryBtn = document.getElementById('retryBtn');
+                if (this.errorQuestions.length === 0) {
+                    retryBtn.disabled = true;
+                    retryBtn.textContent = '🔄 重新測試錯誤題目';
+                } else {
+                    retryBtn.disabled = false;
+                    retryBtn.textContent = `🔄 重新測試錯誤題目 (${this.errorQuestions.length}題)`;
+                }
+                
+                if (this.stats.pass > 0 || this.stats.fail > 0) {
+                    document.getElementById('stats').style.display = 'grid';
+                }
+            },
+            
+            shuffleArray(array) {
+                const shuffled = [...array];
+                for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                }
+                return shuffled;
+            },
+            
+            startExam() {
+                const shuffled = this.shuffleArray(this.allQuestions);
+                this.currentExam = {
+                    questions: shuffled.slice(0, 35),
+                    answers: {},
+                    isRetry: false
+                };
+                this.showSection('exam');
+                this.renderQuestions();
+            },
+            
+            startRetry() {
+                if (this.errorQuestions.length === 0) {
+                    alert('沒有錯誤題目可以重新測試');
+                    return;
+                }
+                
+                this.currentExam = {
+                

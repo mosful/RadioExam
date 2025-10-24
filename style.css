@@ -1,0 +1,256 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    margin: 0;
+    padding: 2rem 0;
+}
+
+.container {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 90%;
+    max-width: 800px;
+    position: relative;
+}
+
+.screen {
+    display: none;
+}
+
+.screen.active {
+    display: block;
+}
+
+#start-screen h1 {
+    text-align: center;
+    color: #0056b3;
+}
+
+#start-screen ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 2rem 0;
+}
+
+#start-screen li {
+    background-color: #e9ecef;
+    border-radius: 5px;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.btn {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 1rem;
+    text-align: center;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+#global-restart-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: auto;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+#quick-answer-btn {
+    background-color: #17a2b8;
+    margin-bottom: 2rem;
+}
+#quick-answer-btn:hover {
+    background-color: #138496;
+}
+
+.question {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.question:last-child {
+    border-bottom: none;
+}
+
+.question p {
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.option input[type="radio"] {
+    margin-right: 10px;
+}
+
+.option label {
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+#result-screen h2 {
+    text-align: center;
+    color: #0056b3;
+}
+
+#score, #pass-fail {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
+#pass-fail.pass {
+    color: #28a745;
+}
+
+#pass-fail.fail {
+    color: #dc3545;
+}
+
+.result-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+#review-container {
+    margin-top: 2rem;
+    display: none;
+}
+
+.review-item {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border-radius: 5px;
+    background-color: #f8d7da;
+    border-left: 5px solid #dc3545;
+}
+
+.review-item p {
+    margin: 0 0 0.5rem 0;
+}
+
+.correct-answer {
+    font-weight: bold;
+    color: #155724;
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #review-container, #review-container * {
+        visibility: visible;
+    }
+    #review-container {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 1rem;
+        border: none;
+        box-shadow: none;
+    }
+    .review-item {
+        page-break-inside: avoid;
+    }
+    #back-to-top-btn {
+        display: none !important;
+    }
+}
+
+#back-to-top-btn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    z-index: 99;
+    border: none;
+    outline: none;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 18px;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+}
+
+    #back-to-top-btn:hover {
+    background-color: #0056b3;
+    opacity: 1;
+}
+
+#quick-submit-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    z-index: 100;
+    display: none; /* Controlled by JS */
+}
+
+#quick-submit-container #quick-answer-btn {
+    width: 38px; /* Approx 1cm */
+    height: 38px; /* Approx 1cm */
+    padding: 0;
+    font-size: 10px;
+    line-height: 1.2;
+    text-align: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.3s, visibility 0.3s;
+    position: absolute;
+    top: 5px;
+    left: 5px;
+}
+
+#quick-submit-container:hover #quick-answer-btn {
+    visibility: visible;
+    opacity: 1;
+}
