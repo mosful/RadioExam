@@ -8,7 +8,11 @@
 </head>
 <body>
     <div class="container">
-        <button id="global-restart-btn" class="btn btn-secondary">重新開始測驗</button>
+        <div class="top-links">
+            <a href="summary.html" id="summary-link" target="_blank">重點整理</a>
+            <span>|</span>
+            <a href="#" id="global-restart-btn">重新開始測驗</a>
+        </div>
         <div id="start-screen" class="screen active">
             <h1>三等業餘無線電人員資格測試</h1>
             <p>說明：</p>
@@ -38,6 +42,7 @@
             <div id="review-container"></div>
         </div>
     </div>
+    <script src="questions.js"></script>
     <script src="script.js"></script>
     <button id="back-to-top-btn" title="Go to top">回到頁首</button>
     <div id="quick-submit-container">

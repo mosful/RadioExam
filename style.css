@@ -72,13 +72,26 @@ body {
     background-color: #5a6268;
 }
 
-#global-restart-btn {
+.top-links {
     position: absolute;
     top: 1rem;
     right: 1rem;
-    width: auto;
-    padding: 0.5rem 1rem;
     font-size: 0.9rem;
+    z-index: 10;
+}
+
+.top-links a {
+    color: #007bff;
+    text-decoration: none;
+    margin: 0 0.5rem;
+}
+
+.top-links a:hover {
+    text-decoration: underline;
+}
+
+.top-links span {
+    color: #ccc;
 }
 
 #quick-answer-btn {
