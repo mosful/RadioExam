@@ -1,8 +1,18 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. Merge all question bank parts into a single, complete object.
+    const questionBank = {
+        regulations: questionBank_part1.regulations,
+        communication: questionBank_part2.communication,
+        principles: questionBank_part3.principles,
+        safety: questionBank_part4.safety,
+        emc: questionBank_part5.emc,
+        interference: questionBank_part6.interference
+    };
+
+    // 2. Get all DOM elements.
     const startScreen = document.getElementById('start-screen');
     const quizScreen = document.getElementById('quiz-screen');
     const resultScreen = document.getElementById('result-screen');
-
     const startBtn = document.getElementById('start-btn');
     const submitBtn = document.getElementById('submit-btn');
     const reviewBtn = document.getElementById('review-btn');
@@ -11,16 +21,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const printBtn = document.getElementById('print-btn');
     const quickAnswerBtn = document.getElementById('quick-answer-btn');
     const globalRestartBtn = document.getElementById('global-restart-btn');
-
     const questionContainer = document.getElementById('question-container');
     const scoreEl = document.getElementById('score');
     const passFailEl = document.getElementById('pass-fail');
     const reviewContainer = document.getElementById('review-container');
     const progressBarContainer = document.getElementById('progress-bar-container');
+    const backToTopBtn = document.getElementById('back-to-top-btn');
 
+    // 3. Initialize state variables.
     let currentQuestions = [];
     let score = 0;
     let incorrectQuestions = [];
+    let printCounter = 0;
+    const originalTitle = document.title;
 
     const questionCounts = {
         regulations: 13,
@@ -31,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
         interference: 1
     };
 
+    // 4. Utility and Core Functions.
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -38,19 +52,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function showScreen(screenName) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(`${screenName}-screen`).classList.add('active');
+        if (reviewContainer) { reviewContainer.style.display = 'none'; }
+        
+        const topLinksContainer = document.querySelector('.top-links');
+        if (topLinksContainer) {
+             // This logic was complex, simplifying to always show the container,
+             // but control individual links.
+             topLinksContainer.style.display = 'flex';
+        }
+
+        const quickAnswerContainer = document.querySelector('.top-links-left');
+        if (quickAnswerContainer) {
+            quickAnswerContainer.style.display = screenName === 'quiz' ? 'block' : 'none';
+        }
+    }
+
     function startTest(questions) {
+        console.log("startTest function called");
         let questionsToTest = [];
-        if (Array.isArray(questions)) {
+        if (Array.isArray(questions)) { // For re-testing mistakes
             questionsToTest = [...questions];
-        } else {
+        } else { // For a new proportional test
+            console.log("Creating a new proportional test");
             for (const category in questionCounts) {
-                if (questionBank[category] && questionBank[category].length > 0) {
+                if (questions[category] && questions[category].length > 0) {
                     const count = questionCounts[category];
-                    shuffleArray(questionBank[category]);
-                    questionsToTest.push(...questionBank[category].slice(0, count));
+                    const shuffledCategory = [...questions[category]].sort(() => Math.random() - 0.5);
+                    questionsToTest.push(...shuffledCategory.slice(0, count));
                 }
             }
         }
+
+        console.log("Total questions selected:", questionsToTest.length);
 
         shuffleArray(questionsToTest);
         currentQuestions = questionsToTest;
@@ -61,7 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         questionContainer.innerHTML = '';
 
         currentQuestions.forEach((q, index) => {
-            // Create Progress Button
             const progressBtn = document.createElement('button');
             progressBtn.classList.add('progress-btn');
             progressBtn.innerText = index + 1;
@@ -71,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             progressBarContainer.appendChild(progressBtn);
 
-            // Create Question Element
             const questionEl = document.createElement('div');
             questionEl.classList.add('question');
             let optionsHTML = '';
@@ -86,7 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
             questionEl.innerHTML = `<p>${index + 1}. ${q.question}</p><div class="options">${optionsHTML}</div>`;
             questionContainer.appendChild(questionEl);
 
-            // Add event listener for highlighting and progress update
             const optionInputs = questionEl.querySelectorAll(`input[name="q${index}"]`);
             optionInputs.forEach(input => {
                 input.addEventListener('change', (e) => {
@@ -104,6 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
+        console.log("Switching to quiz screen");
         showScreen('quiz');
     }
 
@@ -150,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div>${optionsHTML}</div>
                 <p>你的答案: ${q.userAnswer !== undefined ? q.options[q.userAnswer] : '未作答'}</p>
                 <p class="correct-answer">正確答案: ${q.options[q.answer]}</p>
+                <p style="font-size: 0.8em; color: #666;">[來源: ${q.category} - 第${q.id}題]</p>
             `;
             reviewContainer.appendChild(item);
         });
@@ -161,15 +196,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const firstOption = document.getElementById(`q${index}_o0`);
             if (firstOption) {
                 firstOption.checked = true;
-                // Manually trigger change event to update styles
                 firstOption.dispatchEvent(new Event('change'));
             }
         });
         submitTest();
     }
-
-    let printCounter = 0;
-    const originalTitle = document.title;
 
     function printMistakes() {
         reviewMistakes();
@@ -179,23 +210,12 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => { window.print(); }, 100);
     }
 
-    window.addEventListener('afterprint', () => { document.title = originalTitle; });
-
     function restartTest() {
         showScreen('start');
     }
 
-    function showScreen(screenName) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(`${screenName}-screen`).classList.add('active');
-        if (reviewContainer) { reviewContainer.style.display = 'none'; }
-
-        const quickAnswerContainer = document.querySelector('.top-links-left');
-        if (quickAnswerContainer) {
-            quickAnswerContainer.style.display = screenName === 'quiz' ? 'block' : 'none';
-        }
-    }
-
+    // 5. Event Listeners
+    window.addEventListener('afterprint', () => { document.title = originalTitle; });
     startBtn.addEventListener('click', () => startTest(questionBank));
     submitBtn.addEventListener('click', submitTest);
     reviewBtn.addEventListener('click', reviewMistakes);
@@ -203,12 +223,7 @@ document.addEventListener('DOMContentLoaded', () => {
     restartBtn.addEventListener('click', restartTest);
     globalRestartBtn.addEventListener('click', (e) => { e.preventDefault(); restartTest(); });
     printBtn.addEventListener('click', printMistakes);
-    quickAnswerBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        quickSubmit();
-    });
-
-    const backToTopBtn = document.getElementById('back-to-top-btn');
+    quickAnswerBtn.addEventListener('click', (e) => { e.preventDefault(); quickSubmit(); });
     window.onscroll = function() {
         if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
             backToTopBtn.style.display = "block";
@@ -217,4 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     backToTopBtn.addEventListener('click', () => { window.scrollTo({top: 0, behavior: 'smooth'}); });
+
+    // Initial screen setup
+    showScreen('start');
 });
