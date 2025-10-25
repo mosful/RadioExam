@@ -14,7 +14,7 @@ body {
     background-color: #ffffff;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
+    padding: 4rem 2rem 2rem 2rem; /* Increased top padding */
     width: 90%;
     max-width: 800px;
     position: relative;
@@ -61,6 +61,37 @@ body {
     text-align: center;
 }
 
+#progress-bar-container {
+    position: sticky;
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(5px);
+}
+
+.progress-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid #ccc;
+    background-color: #f0f2f5;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.progress-btn.answered {
+    background-color: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
 .btn:hover {
     background-color: #0056b3;
 }
@@ -74,10 +105,19 @@ body {
 
 .top-links {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
+    top: 1.5rem;
+    left: 2rem;
+    right: 2rem;
     font-size: 0.9rem;
     z-index: 10;
+    display: flex; /* Use flexbox */
+    align-items: center;
+}
+
+.top-links-right {
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* Push this to the right */
 }
 
 .top-links a {
@@ -86,20 +126,18 @@ body {
     margin: 0 0.5rem;
 }
 
+#quick-answer-btn {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+}
+
 .top-links a:hover {
     text-decoration: underline;
 }
 
 .top-links span {
     color: #ccc;
-}
-
-#quick-answer-btn {
-    background-color: #17a2b8;
-    margin-bottom: 2rem;
-}
-#quick-answer-btn:hover {
-    background-color: #138496;
 }
 
 .question {
@@ -139,6 +177,11 @@ body {
 .option label {
     flex-grow: 1;
     cursor: pointer;
+}
+
+.option.selected {
+    background-color: #e7f3ff;
+    border-color: #007bff;
 }
 
 #result-screen h2 {

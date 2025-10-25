@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreEl = document.getElementById('score');
     const passFailEl = document.getElementById('pass-fail');
     const reviewContainer = document.getElementById('review-container');
+    const progressBarContainer = document.getElementById('progress-bar-container');
 
     let currentQuestions = [];
     let score = 0;
@@ -39,10 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startTest(questions) {
         let questionsToTest = [];
-        // Check if we are retesting mistakes or starting a new proportional test
-        if (Array.isArray(questions)) { 
+        if (Array.isArray(questions)) {
             questionsToTest = [...questions];
-        } else { 
+        } else {
             for (const category in questionCounts) {
                 if (questionBank[category] && questionBank[category].length > 0) {
                     const count = questionCounts[category];
@@ -57,11 +57,23 @@ document.addEventListener('DOMContentLoaded', () => {
         incorrectQuestions = [];
         score = 0;
 
+        progressBarContainer.innerHTML = '';
         questionContainer.innerHTML = '';
+
         currentQuestions.forEach((q, index) => {
+            // Create Progress Button
+            const progressBtn = document.createElement('button');
+            progressBtn.classList.add('progress-btn');
+            progressBtn.innerText = index + 1;
+            progressBtn.addEventListener('click', () => {
+                const questionEl = document.querySelectorAll('.question')[index];
+                questionEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+            progressBarContainer.appendChild(progressBtn);
+
+            // Create Question Element
             const questionEl = document.createElement('div');
             questionEl.classList.add('question');
-            
             let optionsHTML = '';
             q.options.forEach((option, i) => {
                 optionsHTML += `
@@ -71,9 +83,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             });
-
             questionEl.innerHTML = `<p>${index + 1}. ${q.question}</p><div class="options">${optionsHTML}</div>`;
             questionContainer.appendChild(questionEl);
+
+            // Add event listener for highlighting and progress update
+            const optionInputs = questionEl.querySelectorAll(`input[name="q${index}"]`);
+            optionInputs.forEach(input => {
+                input.addEventListener('change', (e) => {
+                    const allOptions = e.target.closest('.question').querySelectorAll('.option');
+                    allOptions.forEach(opt => opt.classList.remove('selected'));
+                    if (e.target.checked) {
+                        e.target.parentElement.classList.add('selected');
+                        const questionIndex = e.target.name.replace('q', '');
+                        const progressBtn = document.querySelectorAll('.progress-btn')[questionIndex];
+                        if (progressBtn) {
+                            progressBtn.classList.add('answered');
+                        }
+                    }
+                });
+            });
         });
 
         showScreen('quiz');
@@ -82,18 +110,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function submitTest() {
         score = 0;
         incorrectQuestions = [];
-
         currentQuestions.forEach((q, index) => {
             const userAnswerNode = document.querySelector(`input[name="q${index}"]:checked`);
             const userAnswer = userAnswerNode ? parseInt(userAnswerNode.value) : undefined;
-
             if (userAnswer === q.answer) {
                 score++;
             } else {
                 incorrectQuestions.push({ ...q, userAnswer, questionNumber: index + 1 });
             }
         });
-
         scoreEl.innerText = `你的分數: ${score} / ${currentQuestions.length}`;
         if (score >= 25) {
             passFailEl.innerText = '恭喜，你已及格！';
@@ -102,12 +127,10 @@ document.addEventListener('DOMContentLoaded', () => {
             passFailEl.innerText = '很遺憾，你未及格。';
             passFailEl.className = 'fail';
         }
-
         reviewBtn.style.display = incorrectQuestions.length > 0 ? 'block' : 'none';
         retestBtn.style.display = incorrectQuestions.length > 0 ? 'block' : 'none';
         printBtn.style.display = incorrectQuestions.length > 0 ? 'block' : 'none';
         reviewContainer.innerHTML = '';
-
         showScreen('result');
     }
 
@@ -116,14 +139,12 @@ document.addEventListener('DOMContentLoaded', () => {
         incorrectQuestions.sort((a, b) => a.questionNumber - b.questionNumber).forEach(q => {
             const item = document.createElement('div');
             item.classList.add('review-item', 'incorrect');
-            
             let optionsHTML = '';
             q.options.forEach((opt, i) => {
                 let classStr = '';
                 if (i === q.answer) classStr = 'correct-answer';
                 optionsHTML += `<div class="${classStr}">${i + 1}. ${opt}</div>`;
             });
-
             item.innerHTML = `
                 <p>${q.questionNumber}. ${q.question}</p>
                 <div>${optionsHTML}</div>
@@ -140,6 +161,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const firstOption = document.getElementById(`q${index}_o0`);
             if (firstOption) {
                 firstOption.checked = true;
+                // Manually trigger change event to update styles
+                firstOption.dispatchEvent(new Event('change'));
             }
         });
         submitTest();
@@ -153,14 +176,10 @@ document.addEventListener('DOMContentLoaded', () => {
         printCounter++;
         const serial = String(printCounter).padStart(3, '0');
         document.title = `wronganswer_${serial}`;
-        setTimeout(() => {
-            window.print();
-        }, 100);
+        setTimeout(() => { window.print(); }, 100);
     }
 
-    window.addEventListener('afterprint', () => {
-        document.title = originalTitle;
-    });
+    window.addEventListener('afterprint', () => { document.title = originalTitle; });
 
     function restartTest() {
         showScreen('start');
@@ -169,12 +188,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function showScreen(screenName) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(`${screenName}-screen`).classList.add('active');
-        if (reviewContainer) {
-            reviewContainer.style.display = 'none';
-        }
-        const quickSubmitContainer = document.getElementById('quick-submit-container');
-        if (quickSubmitContainer) {
-            quickSubmitContainer.style.display = screenName === 'quiz' ? 'block' : 'none';
+        if (reviewContainer) { reviewContainer.style.display = 'none'; }
+
+        const quickAnswerContainer = document.querySelector('.top-links-left');
+        if (quickAnswerContainer) {
+            quickAnswerContainer.style.display = screenName === 'quiz' ? 'block' : 'none';
         }
     }
 
@@ -183,15 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
     reviewBtn.addEventListener('click', reviewMistakes);
     retestBtn.addEventListener('click', () => startTest(incorrectQuestions.map(q => { delete q.userAnswer; return q; })) );
     restartBtn.addEventListener('click', restartTest);
-    globalRestartBtn.addEventListener('click', (e) => {
-        e.preventDefault(); // Prevent the link from navigating
-        restartTest();
-    });
+    globalRestartBtn.addEventListener('click', (e) => { e.preventDefault(); restartTest(); });
     printBtn.addEventListener('click', printMistakes);
-    quickAnswerBtn.addEventListener('click', quickSubmit);
+    quickAnswerBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        quickSubmit();
+    });
 
     const backToTopBtn = document.getElementById('back-to-top-btn');
-
     window.onscroll = function() {
         if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
             backToTopBtn.style.display = "block";
@@ -199,8 +216,5 @@ document.addEventListener('DOMContentLoaded', () => {
             backToTopBtn.style.display = "none";
         }
     };
-
-    backToTopBtn.addEventListener('click', () => {
-        window.scrollTo({top: 0, behavior: 'smooth'});
-    });
+    backToTopBtn.addEventListener('click', () => { window.scrollTo({top: 0, behavior: 'smooth'}); });
 });

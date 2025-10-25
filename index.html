@@ -9,9 +9,14 @@
 <body>
     <div class="container">
         <div class="top-links">
-            <a href="summary.html" id="summary-link" target="_blank">重點整理</a>
-            <span>|</span>
-            <a href="#" id="global-restart-btn">重新開始測驗</a>
+            <div class="top-links-left">
+                <a href="#" id="quick-answer-btn">快速送出(預設全選1)</a>
+            </div>
+            <div class="top-links-right">
+                <a href="summary.html" id="summary-link" target="_blank">重點整理</a>
+                <span>|</span>
+                <a href="#" id="global-restart-btn">重新開始測驗</a>
+            </div>
         </div>
         <div id="start-screen" class="screen active">
             <h1>三等業餘無線電人員資格測試</h1>
@@ -25,6 +30,7 @@
         </div>
 
         <div id="quiz-screen" class="screen">
+            <div id="progress-bar-container"></div>
             <div id="question-container"></div>
             <button id="submit-btn" class="btn">提交答案</button>
         </div>
